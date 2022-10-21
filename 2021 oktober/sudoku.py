@@ -1,131 +1,90 @@
-SOR_HOSSZA = 9
+# 1. feladat
+from itertools import count
 
-'''
-1. FELADAT
-'''
-# User input bekerese
+
 print('1. feladat')
-bekertFajlNeve = input('Adja meg a bemeneti fajl nevet! ')
-bekertSor = int(input('Adja meg egy sor szamat! '))
-bekertOszlop = int(input('Adja meg egy oszlop szamat! '))
-print()
+bemenetiFajl = input('Adja meg a bementi fajl nevet! ')
+felhasznaloSor = int(input('Adja meg egy sor szamat! '))
+felhasznaloOszlop = int(input('Adja meg egy oszlop szamat! '))
 
 
-'''
-2. FELADAT
-'''
-# A felhasznalo altal megadott fajl beolvasasa csak olvashato modban, utf-8 kodolasban
-fajl = open(bekertFajlNeve, 'r', encoding='utf-8')
-beolvasottFajl = fajl.read()
-fajl.close()
+# 2. feladat
+TABLAZAT = []
+LEPESEK = []
 
-# A beolvasott string listava alakitasa szamonkent
-feldolgozottAdatok = beolvasottFajl.split()
-del(beolvasottFajl)
+f = open(bemenetiFajl).read()
+BEOLVASOTT_ADATOK = f.strip().splitlines()
 
-# A felhasznalo lepeseinek masik listaba atrakasa es eltavolitasa az elozo listabol
-adatokHossza = len(feldolgozottAdatok)
-FELHASZNALO_LEPESEI = []
-for i in range(12):
-    FELHASZNALO_LEPESEI.append(feldolgozottAdatok[adatokHossza - i - 1])
-    feldolgozottAdatok.pop(adatokHossza - i - 1)
-
-FELHASZNALO_LEPESEI.reverse()
-SUDOKU_TABLAZAT = feldolgozottAdatok
-del(feldolgozottAdatok)
+for i in range(13):
+    if i < 9:
+        TABLAZAT.append(BEOLVASOTT_ADATOK[i].split())
+    else:
+        LEPESEK.append(BEOLVASOTT_ADATOK[i].split())
 
 
-'''
-3. FELADAT
-'''
-print('3. feladat')
-
-# A megadott helyen talalhato szam megkeresese
-talaltErtek = int(SUDOKU_TABLAZAT[((bekertSor - 1) * 9) + (bekertOszlop - 1)])
-if talaltErtek == 0:
-    print('Az adott helyet meg nem toltottek ki.')
+# 3. feladat
+print('\n3. feladat')
+keresettMezoErteke = TABLAZAT[felhasznaloSor - 1][felhasznaloOszlop - 1]
+if int(keresettMezoErteke) != 0:
+    print(f'Az adott helyen szereplo szam: {keresettMezoErteke}')
+    resztabla = ((felhasznaloOszlop - 1) // 3 + ((felhasznaloSor - 1) // 3) * 3) + 1
+    print(f'A hely a(z) {resztabla} resztablahoz tartozik.')
 else:
-    print(f'Az adott helyen szereplo szam: {talaltErtek}')
+    print('Az adott helyet meg nem toltottek ki.')
 
-# A megadott hely resztablajanak megkeresese
-def resztabla_helymeghatarozo(szam):
-    if szam / 3 <= 1:
-        return 1
-    elif szam / 3 <= 2:
-        return 2
+
+# 4. feladat
+print('\n4. feladat')
+osszesHely = 0
+uresHely = 0
+
+for sor in TABLAZAT:
+    osszesHely += len(sor)
+    uresHely += sor.count('0')
+
+print(f'Az ures helyek aranya: {uresHely / osszesHely * 100:.1f}%')
+
+
+# 5. feladat
+print('\n5. feladat')
+
+def ertekAzOszlopban(ertek, oszlop):
+    for sor in TABLAZAT:
+        if sor[oszlop - 1] == str(ertek):
+            return True
+    return False
+
+def resztablaHelper(resztabla):
+    resztablaErtekei = []
+    for sor in range(len(TABLAZAT)):
+        for oszlop in range(len(TABLAZAT[sor])):
+            jelenlegiResztabla =( oszlop // 3) + ((sor // 3) * 3) + 1
+            if jelenlegiResztabla == resztabla:
+                resztablaErtekei.append(TABLAZAT[sor][oszlop])
+    return resztablaErtekei
+
+def ertekAResztablaban(ertek, sor, oszlop):
+    resztabla = ((oszlop - 1) // 3 + ((sor - 1) // 3) * 3) + 1
+    if str(ertek) in resztablaHelper(resztabla):
+        return True
     else:
-        return 3
-
-resztablaOszlop = resztabla_helymeghatarozo(bekertOszlop)
-resztablaSor = resztabla_helymeghatarozo(bekertSor)
-resztablaSorszama = resztablaOszlop * resztablaSor
-print(f'A hely a(z) {resztablaSorszama} resztablahoz tartozik.\n')
+        return False
 
 
-'''
-4. FELADAT
-'''
-uresHelyekAranya = (SUDOKU_TABLAZAT.count('0') / len(SUDOKU_TABLAZAT) * 100).__round__(1)
-print(f'4. feladat\nAz ures helyek aranya: {uresHelyekAranya}%\n')
+for lepes in LEPESEK:
+    ertek, sor, oszlop = int(lepes[0]), int(lepes[1]), int(lepes[2])
 
-
-'''
-5. feladat
-'''
-# A listaban talalhato ertekek atalakitasa stringbol integerre
-for i in range(len(FELHASZNALO_LEPESEI)):
-    FELHASZNALO_LEPESEI[i] = int(FELHASZNALO_LEPESEI[i])
-
-# A felhasznalo lepeseinek listaba rendezese
-for i in range(int(len(FELHASZNALO_LEPESEI) / 3)):
-    z = []
-    x = 0
-    while x <= 2:
-        z.append(FELHASZNALO_LEPESEI[0])
-        FELHASZNALO_LEPESEI.pop(0)
-        x += 1
-    FELHASZNALO_LEPESEI.append(z)
-
-# szam, sor, oszlop
-print('5. feladat')
-for lepesek in FELHASZNALO_LEPESEI:
-    szam = lepesek[0]
-    sor = lepesek[1]
-    oszlop = lepesek[2]
-    print(f'A kivalasztott sor: {sor} oszlop: {oszlop} a szam: {szam}')
-
-    helyErteke = int(SUDOKU_TABLAZAT[((sor - 1) * 9) + (oszlop - 1)])
-    if helyErteke != 0:
-        print('A helyet mar kitoltottek.\n')
+    resp = str()
+    if TABLAZAT[sor - 1][oszlop - 1] != '0':
+        resp = 'A helyet mar kitoltottek.'
+    elif ertek in TABLAZAT[sor - 1]:
+        resp = 'Az adott sorban mar szerepel a szam.'
+    elif ertekAzOszlopban(ertek, oszlop):
+        resp = 'Az adott oszlopban mar szerepel a szam.'
+    elif ertekAResztablaban(ertek, sor, oszlop):
+        resp = 'Az adott resztablazatban mar szerepel a szam.'
     else:
-        helyIndex = (sor - 1) * 9 + (oszlop - 1)
-        sorElejeIndex = helyIndex - oszlop - 1
-        vanSzam = False
-        for i in range(9):
-            if int(SUDOKU_TABLAZAT[sorElejeIndex + i]) == szam:
-                vanSzam = True
-        if vanSzam:
-            print('Az adott sorban mar szerepel a szam.\n')
-        else:
-            oszlopEleje = helyIndex - (sor - 1) * 9
-            vanSzam = False
-            for i in range(9):
-                if int(SUDOKU_TABLAZAT[oszlopEleje + i * 9]) == szam:
-                    vanSzam = True
-            if vanSzam:
-                print('Az adott oszlopban mar szerepel a szam.\n')
-            else:
-                # Resztablazatos szopas
-                miResztablank = resztabla_helymeghatarozo(sor) * resztabla_helymeghatarozo(oszlop)
-                miResztablankElemei = []
-                for i in range(len(SUDOKU_TABLAZAT)):
-                    jelenlegiOszlop = i % 9
-                    jelenlegiSor = i // 9
-                    jelenlegiResztabla = resztabla_helymeghatarozo(jelenlegiSor) * resztabla_helymeghatarozo(jelenlegiOszlop)
-                    if jelenlegiResztabla == miResztablank:
-                        miResztablankElemei.append(int(SUDOKU_TABLAZAT[i]))
-                print(f'A szamunk: {szam}\nResztabla szamai: {miResztablankElemei}')
-                if szam in miResztablankElemei:
-                    print('Az adott resztablazatban mar szerepel a szam.\n')
-                else:
-                    print('A lepes megteheto.\n')
+        resp = 'A lepes megteheto.'
+    
+    print(f'A kivalasztott sor: {sor} oszlop: {oszlop} a szam: {ertek}')
+    print(resp, end='\n\n')
